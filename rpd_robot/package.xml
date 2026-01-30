@@ -3,11 +3,13 @@
 <package format="3">
   <name>rpd_robot</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="cherry@todo.todo">cherry</maintainer>
+  <description>Roboparadigm Robot metapackage</description>
+  <maintainer email="srichatur24@kmit.edu.in">Srichatur</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>rpd_description</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

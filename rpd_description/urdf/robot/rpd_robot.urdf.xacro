@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="rpd_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="PI" value="/home/cherry/stuff/robot" />
+
+  <xacro:include filename="$(pkg_share rpd_robot_description)/urdf/util/materials.xacro"/>
+  <xacro:include filename="$(pkg_share rpd_robot_description)/urdf/util/properties.xacro"/>
+
+  <xacro:include filename="$(pkg_share rpd_robot_description)/urdf/mech/rpd_robot_arm.urdf.xacro"/>
+  <!-- <xacro:include filename="$(pkg_share rpd_robot_description)/urdf/mech/rpd_robot_gripper.urdf.xacro"/>
+
+  <xacro:include filename="$(pkg_share rpd_robot_description)/urdf/ros2_control/rpd_robot_ros2_control.xacro"/> -->
+
+</robot>
