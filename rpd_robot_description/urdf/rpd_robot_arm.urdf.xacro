@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+
+  <!-- origin and geometry macro -->
+  <xacro:macro name="origin_geometry" params="number">
+    <origin rpy="0 0 0" xyz="${link_positions[number]}" />
+    <geometry>
+      <mesh filename="file://${$description_pkg}/meshes/${link_names[number]}.stl" scale="${scale}" />
+    </geometry>
+  </xacro:macro>
+
+
+  <!-- link macro -->
+  <xacro:macro name="link" params="number color:=black">
+    <link name="${link_names[number]}">
+        <visual>
+        <xacro:origin_geometry number="${number}" />
+        <material name="${color}" />
+        </visual>
+        <collision>
+        <xacro:origin_geometry number="${number}" />
+        </collision>
+    </link>
+  </xacro:macro>
+
+
+ <!-- joint macro -->
+  <xacro:macro name="joint" params="number lower upper velocity axis">
+    <joint name="${joint_names[number]}" type="revolute">
+        <origin rpy="0 0 0" xyz="${joint_positions[number]}"/>
+        <limit effort="${effort}" lower="${lower}" upper="${upper}" velocity="${velocity}"/>
+        <axis xyz="${axis}" />
+        <parent link="${link_names[number]}" />
+        <child link="${link_names[number + 1]}" />
+    </joint>
+  </xacro:macro>
+
+
+  <!-- world link and joint-->
+  <link name="world" />
+  <joint name="world_to_${link_names[0]}" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0" />
+    <parent link="world"/>
+    <child link="${link_names[0]}"/>
+  </joint>
+
+
+  <!-- robot links and joints -->
+  <xacro:link number="0" />
+  <xacro:joint number="0" lower="${-3 * PI / 2}" upper="${3 * PI / 2}" velocity="0.5" axis="0 0 1" />
+  <xacro:link number="1" />
+  <xacro:joint number="1" lower="${-1 * PI / 2}" upper="${PI / 2}" velocity="0.5" axis="1 0 0" />
+  <xacro:link number="2" />
+  <xacro:joint number="2" lower="${-1 * PI / 3}" upper="${PI / 2}" velocity="0.5" axis="1 0 0" />
+  <xacro:link number="3" />
+
+</robot>

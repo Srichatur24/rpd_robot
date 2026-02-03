@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<robot name="rpd_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="description_pkg" value="$(find rpd_robot_description)" />
+
+  <xacro:include filename="${description_pkg}/urdf/materials.xacro"/>
+  <xacro:include filename="${description_pkg}/urdf/properties.xacro"/>
+
+  <xacro:include filename="${description_pkg}/urdf/rpd_robot_arm.urdf.xacro"/>
+  <xacro:include filename="${description_pkg}/urdf/rpd_robot_gripper.urdf.xacro"/>
+
+  <!-- <xacro:include filename="$(find rpd_robot_description)/urdf/rpd_robot.ros2_control.xacro"/> -->
+
+</robot>
