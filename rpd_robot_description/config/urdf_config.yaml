@@ -1,0 +1,79 @@
+links:
+  - name: base_link
+    xyz: 0 -0.0125 0.0189
+    color: black
+    com: 0 0 0
+    inertia:
+      ixx: 0
+      iyy: 0
+      izz: 0
+
+  - name: link_1
+    xyz: 0 0 0.025613
+    color: black
+    com: 0 0 0
+    inertia:
+      ixx: 0
+      iyy: 0
+      izz: 0
+
+  - name: link_2
+    xyz: 0 0.013903 0.065165
+    color: black
+    com: 0 0 0
+    inertia:
+      ixx: 0
+      iyy: 0
+      izz: 0
+
+  - name: link_3
+    xyz: 0 0.060661 0
+    color: black
+    com: 0 0 0
+    inertia:
+      ixx: 0
+      iyy: 0
+      izz: 0
+
+  - name: link_4
+    xyz: 0 0.025465 0.0115
+    color: black
+    com: 0 0 0
+    inertia:
+      ixx: 0
+      iyy: 0
+      izz: 0
+
+
+joints:
+  - name: joint_1
+    xyz: 0 0 0.0378
+    axis: 0 0 1
+    effort: 500
+    lower: -3.1415926535897932384626433832795
+    upper: 3.1415926535897932384626433832795
+    velocity: 2.4
+
+  - name: joint_2
+    xyz: 0 0 0.0411
+    axis: 1 0 0
+    effort: 500
+    lower: -3.1415926535897932384626433832795
+    upper: 3.1415926535897932384626433832795
+    velocity: 2.4
+
+  - name: joint_3
+    xyz: 0 0.030075 0.12631
+    axis: 1 0 0
+    effort: 500
+    lower: -3.1415926535897932384626433832795
+    upper: 3.1415926535897932384626433832795
+    velocity: 2.4
+
+  - name: joint_4
+    xyz: 0 0.123535 0
+    axis: 1 0 0
+    effort: 500
+    lower: -3.1415926535897932384626433832795
+    upper: 3.1415926535897932384626433832795
+    velocity: 2.4

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <ros2_control name="RoboparadigmRobotSystem" type="system">
+
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+      <param name="state_following_offset">0.0</param>
+      <param name="calculate_dynamics">true</param>
+    </hardware>
+
+    <xacro:macro name="joint_control" params="n">
+      <joint name="${joints[n]['name']}">
+          <command_interface name="position"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+      </joint>
+    </xacro:macro>
+
+    <xacro:joint_control n="0" />
+    <xacro:joint_control n="1" />
+    <xacro:joint_control n="2" />
+
+  </ros2_control>
+
+</robot>
