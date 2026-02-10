@@ -1,0 +1,118 @@
+#include "rpd_robot_hardware/rpd_robot_hardware_interface.hpp"
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
+#include <cmath>
+
+namespace rpd_robot_hardware {
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hardware_interface::CallbackReturn RpdRobotHardwareInterface::on_init(const hardware_interface::HardwareInfo &info) {
+        if(hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
+            return hardware_interface::CallbackReturn::ERROR;
+        info_ = info;
+        num_of_joints_ = info_.joints.size();
+        port_ = info_.hardware_parameters["port"];
+        baudrate_ = std::stoi(info_.hardware_parameters["baudrate"]);
+
+        position_states_.resize(num_of_joints_, 0.0);
+        velocity_states_.resize(num_of_joints_, 0.0);
+        acceleration_states_.resize(num_of_joints_, 0.0);
+        position_commands_.resize(num_of_joints_, 0.0);
+        velocity_commands_.resize(num_of_joints_, 0.0);
+        acceleration_commands_.resize(num_of_joints_, 0.0);
+        motor_ids_.resize(num_of_joints_);
+        motor_ids_uint8_.resize(num_of_joints_);
+
+        for (size_t i = 0; i < num_of_joints_; i++) {
+            motor_ids_[i] = std::stoi(info_.joints[i].parameters.at("motor_id"));
+            motor_ids_uint8_[i] = static_cast<uint8_t>(motor_ids_[i]);
+        }
+        return hardware_interface::CallbackReturn::SUCCESS;
+    }
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    std::vector<hardware_interface::StateInterface> RpdRobotHardwareInterface::export_state_interfaces() {
+        std::vector<hardware_interface::StateInterface> state_interfaces;
+        for (size_t i = 0; i < num_of_joints_; i++) {
+            auto joint_name = info_.joints[i].name;
+            state_interfaces.emplace_back(hardware_interface::StateInterface(joint_name, hardware_interface::HW_IF_POSITION, &position_states_[i]));
+            state_interfaces.emplace_back(hardware_interface::StateInterface(joint_name, hardware_interface::HW_IF_VELOCITY, &velocity_states_[i]));
+            state_interfaces.emplace_back(hardware_interface::StateInterface(joint_name, hardware_interface::HW_IF_ACCELERATION, &acceleration_states_[i]));
+        }
+        return state_interfaces;
+    }
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    std::vector<hardware_interface::CommandInterface> RpdRobotHardwareInterface::export_command_interfaces() {
+        std::vector<hardware_interface::CommandInterface> command_interfaces;
+        for (size_t i = 0; i < num_of_joints_; i++) {
+            auto joint_name = info_.joints[i].name;
+            command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_POSITION, &position_commands_[i]));
+            command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_VELOCITY, &velocity_commands_[i]));
+            command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_ACCELERATION, &acceleration_commands_[i]));
+        }
+        return command_interfaces;
+    }
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hardware_interface::CallbackReturn RpdRobotHardwareInterface::on_configure(const rclcpp_lifecycle::State &) {
+        if (!driver_.begin(baudrate_, port_.c_str())) return hardware_interface::CallbackReturn::ERROR;
+        usleep(100000);
+        driver_.syncReadBegin(num_of_joints_, sizeof(rx_packet_));
+        return hardware_interface::CallbackReturn::SUCCESS;
+    }
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hardware_interface::CallbackReturn RpdRobotHardwareInterface::on_activate(const rclcpp_lifecycle::State &) {
+        for (size_t i = 0; i < num_of_joints_; i++) {
+            driver_.EnableTorque(motor_ids_[i], 1);
+            usleep(50000);
+        }
+        return hardware_interface::CallbackReturn::SUCCESS;
+    }
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hardware_interface::CallbackReturn RpdRobotHardwareInterface::on_deactivate(const rclcpp_lifecycle::State &) {
+        for (size_t i = 0; i < num_of_joints_; i++) driver_.EnableTorque(motor_ids_[i], 0);
+        return hardware_interface::CallbackReturn::SUCCESS;
+    }
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hardware_interface::CallbackReturn RpdRobotHardwareInterface::on_cleanup(const rclcpp_lifecycle::State &) {
+        driver_.syncReadEnd();
+        driver_.end();
+        return hardware_interface::CallbackReturn::SUCCESS;
+    }
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hardware_interface::return_type RpdRobotHardwareInterface::read(const rclcpp::Time &, const rclcpp::Duration &) {
+        driver_.syncReadPacketTx(motor_ids_uint8_.data(), num_of_joints_, SMS_STS_PRESENT_POSITION_L, sizeof(rx_packet_));
+        // Receive and process response from each motor
+        for (size_t i = 0; i < num_of_joints_; i++) {
+            if (!driver_.syncReadPacketRx(motor_ids_uint8_[i], rx_packet_)) continue;
+            // Successfully received data
+            int16_t raw_pos = driver_.syncReadRxPacketToWrod(15);
+            int16_t raw_speed = driver_.syncReadRxPacketToWrod(15);
+            // Convert to radians and rad/s
+            position_states_[i] = (raw_pos / 4095.0) * 2.0 * M_PI;
+            velocity_states_[i] = raw_speed * 0.0146 * (2.0 * M_PI / 60.0);
+        }
+        return hardware_interface::return_type::OK;
+    }
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hardware_interface::return_type RpdRobotHardwareInterface::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
+        // Prepare arrays for sync write
+        std::vector<s16> positions(num_of_joints_);
+        std::vector<u16> velocities(num_of_joints_);
+        std::vector<u8> accelerations(num_of_joints_);
+        // Convert commands from radians to motor units
+        for (size_t i = 0; i < num_of_joints_; i++) {
+            int target_pos = static_cast<int>((position_commands_[i] / (2.0 * M_PI)) * 4095.0);
+            positions[i] = static_cast<s16>(std::max(0, std::min(4095, target_pos)));
+            velocities[i] = static_cast<u16>(std::abs(velocity_commands_[i]) / (0.0146 * (2.0 * M_PI / 60.0)));
+            // accelerations[i] = static_cast<u8>(std::abs(acceleration_commands_[i]) / /*ACCEL_CONVERSION_FACTOR*/);
+            accelerations[i] = 50;
+        }
+        driver_.SyncWritePosEx(motor_ids_uint8_.data(), num_of_joints_, positions.data(), velocities.data(), accelerations.data());
+        return hardware_interface::return_type::OK;
+    }
+
+} // namespace rpd_robot_hardware
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(
+    rpd_robot_hardware::RpdRobotHardwareInterface,
+    hardware_interface::SystemInterface
+)

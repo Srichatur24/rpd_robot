@@ -6,7 +6,7 @@
   <xacro:macro name="origin_geometry" params="link">
     <origin rpy="0 0 0" xyz="${link['xyz']}" />
     <geometry>
-      <mesh filename="file://${description_pkg}/meshes/${link['name']}.stl" />
+      <mesh filename="file://${description_pkg}/meshes/${link['name']}.stl" /> <!-- package -->
     </geometry>
   </xacro:macro>
 
@@ -27,25 +27,30 @@
   <xacro:macro name="link" params="link color:=black">
     <link name="${link['name']}">
         <visual>
-        <xacro:origin_geometry link="${link}" />
-        <material name="${link['color']}" />
+          <xacro:origin_geometry link="${link}" />
+          <material name="${link['color']}" />
         </visual>
         <collision>
-        <xacro:origin_geometry link="${link}" />
+          <xacro:origin_geometry link="${link}" /> <!-- box geo -->
         </collision>
-        <!-- <xacro:inertial n="${links[n]}" /> -->
+        <xacro:inertial link="${link}" />
     </link>
   </xacro:macro>
 
 
  <!-- joint macro -->
-  <xacro:macro name="joint" params="joint n">
-    <joint name="${joint['name']}" type="revolute"> <!-- can keep continuous for joint_1 -->
-        <origin rpy="0 0 0" xyz="${joint['xyz']}"/>
-        <limit effort="${joint['effort']}" lower="${joint['lower']}" upper="${joint['upper']}" velocity="${joint['velocity']}"/>
+  <xacro:macro name="joint" params="joint is_fixed:=false">
+    <joint name="${joint['name']}" type="${joint['type']}">
+      <origin rpy="0 0 0" xyz="${joint['xyz']}" />
+      <xacro:if value="${not is_fixed}">
+        <limit effort="${joint['effort']}" lower="${joint['lower']}" upper="${joint['upper']}" velocity="${joint['velocity']}" />
         <axis xyz="${joint['axis']}" />
-        <parent link="${links[n]['name']}" />
-        <child link="${links[n+1]['name']}" />
+      </xacro:if>
+        <parent link="${joint['parent']}" />
+        <child link="${joint['child']}" />
+      <xacro:if value="${joint['mimic']['use']}">
+        <mimic joint="${joint['mimic']['joint']}" multiplier="${joint['mimic']['multiplier']}" />
+      </xacro:if>
     </joint>
   </xacro:macro>
 
@@ -61,13 +66,32 @@
 
   <!-- robot links and joints -->
   <xacro:link link="${links[0]}" />
-  <xacro:joint joint="${joints[0]}" n="0" />
+  <xacro:joint joint="${joints[0]}" />
   <xacro:link link="${links[1]}" />
-  <xacro:joint joint="${joints[1]}" n="1" />
+  <xacro:joint joint="${joints[1]}" />
   <xacro:link link="${links[2]}" />
-  <xacro:joint joint="${joints[2]}" n="2" />
+  <xacro:joint joint="${joints[2]}" />
   <xacro:link link="${links[3]}" />
-  <xacro:joint joint="${joints[3]}" n="3" />
+  <xacro:joint joint="${joints[3]}" />
   <xacro:link link="${links[4]}" />
+
+  <xacro:joint joint="${joints[4]}" />
+  <xacro:link link="${links[5]}" />
+  <xacro:joint joint="${joints[5]}" />
+  <xacro:link link="${links[6]}" />
+
+
+  <!-- end effector link and joint -->
+  <xacro:joint joint="${joints[6]}" is_fixed="true" />
+
+  <link name="${links[7]['name']}">
+    <visual>
+      <origin rpy="0 0 0" xyz="${links[7]['xyz']}" />
+      <geometry>
+        <box size="${links[7]['size']}" />
+      </geometry>
+      <material name="${links[7]['color']}"/>
+    </visual>
+  </link>
 
 </robot>

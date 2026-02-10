@@ -1,0 +1,7 @@
+<library path="rpd_robot_hardware">
+    <class name="rpd_robot_hardware/RpdRobotHardwareInterface"
+            type="rpd_robot_hardware::RpdRobotHardwareInterface"
+            base_class_type="hardware_interface::SystemInterface">
+        <description>Hardware interface for Roboparadigm Robot with Waveshare ST series servo motors</description>
+    </class>
+</library>

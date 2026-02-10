@@ -1,12 +1,16 @@
 controller_manager:
   ros__parameters:
-    update_rate: 1000
+    update_rate: 100
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
     arm_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+
+    gripper_controller:
+      type: position_controllers/GripperActionController # [Deprecated]
+      # type: gripper_controllers/GripperActionController
 
 
 arm_controller:
@@ -16,14 +20,27 @@ arm_controller:
       - joint_2
       - joint_3
       - joint_4
-
     interface_name: position
-
     command_interfaces:
       - position
-
+      - velocity
+      - acceleration
     state_interfaces:
       - position
       - velocity
-
+      - acceleration
     allow_partial_joints_goal: true
+    allow_nonzero_velocity_at_trajectory_end: true
+
+
+gripper_controller:
+  ros__parameters:
+    joint: gripper_left_joint
+    command_interfaces:
+      - position
+      - velocity
+      - acceleration
+    state_interfaces:
+      - position
+      - velocity
+      - acceleration

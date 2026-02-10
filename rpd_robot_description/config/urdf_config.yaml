@@ -2,78 +2,179 @@ links:
   - name: base_link
     xyz: 0 -0.0125 0.0189
     color: black
+    mass: 0.05
     com: 0 0 0
     inertia:
-      ixx: 0
-      iyy: 0
-      izz: 0
+      ixx: 0.00001
+      iyy: 0.00001
+      izz: 0.00001
 
   - name: link_1
     xyz: 0 0 0.025613
     color: black
+    mass: 0.05
     com: 0 0 0
     inertia:
-      ixx: 0
-      iyy: 0
-      izz: 0
+      ixx: 0.00001
+      iyy: 0.00001
+      izz: 0.00001
 
   - name: link_2
     xyz: 0 0.013903 0.065165
     color: black
+    mass: 0.05
     com: 0 0 0
     inertia:
-      ixx: 0
-      iyy: 0
-      izz: 0
+      ixx: 0.00001
+      iyy: 0.00001
+      izz: 0.00001
 
   - name: link_3
     xyz: 0 0.060661 0
     color: black
+    mass: 0.05
     com: 0 0 0
     inertia:
-      ixx: 0
-      iyy: 0
-      izz: 0
+      ixx: 0.00001
+      iyy: 0.00001
+      izz: 0.00001
 
   - name: link_4
-    xyz: 0 0.025465 0.0115
+    xyz: -0.000167 0.034769 0.005646
     color: black
+    mass: 0.05
     com: 0 0 0
     inertia:
-      ixx: 0
-      iyy: 0
-      izz: 0
+      ixx: 0.00001
+      iyy: 0.00001
+      izz: 0.00001
+
+  - name: gripper_left_link
+    xyz: -0.046894 0.041278 0.006751
+    color: black
+    mass: 0.05
+    com: 0 0 0
+    inertia:
+      ixx: 0.00001
+      iyy: 0.00001
+      izz: 0.00001
+
+  - name: gripper_right_link
+    xyz: 0.046894 0.041278 0.006751
+    color: black
+    mass: 0.05
+    com: 0 0 0
+    inertia:
+      ixx: 0.00001
+      iyy: 0.00001
+      izz: 0.00001
+
+  - name: ee_link
+    xyz: 0 0.041278 0.006751
+    color: blue
+    size: 0.01 0.01 0.01
 
 
 joints:
   - name: joint_1
+    type: revolute
     xyz: 0 0 0.0378
     axis: 0 0 1
     effort: 500
     lower: -3.1415926535897932384626433832795
     upper: 3.1415926535897932384626433832795
-    velocity: 2.4
+    velocity: 2.5
+    acceleration: 1.0
+    parent: base_link
+    child: link_1
+    motor_id: 1
+    mimic:
+      use: false
+    initial_position: 0.0
 
   - name: joint_2
+    type: revolute
     xyz: 0 0 0.0411
     axis: 1 0 0
     effort: 500
-    lower: -3.1415926535897932384626433832795
-    upper: 3.1415926535897932384626433832795
-    velocity: 2.4
+    lower: -1.5707963267948966192313216916398
+    upper: 1.5707963267948966192313216916398
+    velocity: 2.5
+    acceleration: 1.0
+    parent: link_1
+    child: link_2
+    motor_id: 2
+    mimic:
+      use: false
+    initial_position: 0.0
 
   - name: joint_3
+    type: revolute
     xyz: 0 0.030075 0.12631
     axis: 1 0 0
     effort: 500
-    lower: -3.1415926535897932384626433832795
-    upper: 3.1415926535897932384626433832795
-    velocity: 2.4
+    lower: -1.5707963267948966192313216916398
+    upper: 1.5707963267948966192313216916398
+    velocity: 2.5
+    acceleration: 1.0
+    parent: link_2
+    child: link_3
+    motor_id: 3
+    mimic:
+      use: false
+    initial_position: 0.0
 
   - name: joint_4
+    type: revolute
     xyz: 0 0.123535 0
     axis: 1 0 0
     effort: 500
-    lower: -3.1415926535897932384626433832795
-    upper: 3.1415926535897932384626433832795
-    velocity: 2.4
+    lower: -1.5707963267948966192313216916398
+    upper: 1.5707963267948966192313216916398
+    velocity: 2.5
+    acceleration: 1.0
+    parent: link_3
+    child: link_4
+    motor_id: 4
+    mimic:
+      use: false
+    initial_position: 0.0
+
+  - name: gripper_left_joint
+    type: prismatic
+    xyz: -0.000167 0.063237 -0.001105
+    axis: -1 0 0
+    effort: 500
+    lower: -0.01
+    upper: 0.0
+    velocity: 0.01
+    parent: link_4
+    child: gripper_left_link
+    motor_id: 5
+    mimic:
+      use: false
+    initial_position: 0.0
+
+  - name: gripper_right_joint
+    type: prismatic
+    xyz: -0.000167 0.063237 -0.001105
+    axis: 1 0 0
+    effort: 500
+    lower: -0.01
+    upper: 0.0
+    velocity: 0.01
+    parent: link_4
+    child: gripper_right_link
+    mimic:
+      use: true
+      joint: gripper_left_joint
+      multiplier: 1.0
+    initial_position: 0.0
+
+  - name: ee_joint
+    type: fixed
+    xyz: -0.000167 0.063237 -0.001105
+    parent: link_4
+    child: ee_link
+    mimic:
+      use: false

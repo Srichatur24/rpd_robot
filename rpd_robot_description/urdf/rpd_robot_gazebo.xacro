@@ -12,25 +12,34 @@
     </gazebo>
   </xacro:macro>
 
+
+  <xacro:gz_link_physical_properties reference="base_link"/>
   <xacro:gz_link_physical_properties reference="link_1"/>
   <xacro:gz_link_physical_properties reference="link_2"/>
   <xacro:gz_link_physical_properties reference="link_3"/>
-  <!-- <xacro:Link reference="link_4"/> -->
+  <xacro:gz_link_physical_properties reference="gripper_link"/>
   <xacro:gz_link_physical_properties reference="gripper_left_link"/>
   <xacro:gz_link_physical_properties reference="gripper_right_link"/>
-  <gazebo reference="gripper_link" />
+  <gazebo reference="ee_link" />
+
 
 <gazebo>
-    <plugin filename="" name="" />
-</gazebo>
-
-<gazebo>
-    <plugin filename="gz-sim-joint-state-publisher" name="gz::sim::systems::JointStatePublisher">
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <joint_name>world_to_${links[0]['name']}</joint_name>
       <joint_name>joint_1</joint_name>
       <joint_name>joint_2</joint_name>
       <joint_name>joint_3</joint_name>
+      <joint_name>joint_4</joint_name>
+      <joint_name>gripper_left_joint</joint_name>
+      <joint_name>gripper_right_joint</joint_name>
     </plugin>
 </gazebo>
 
+
+  <gazebo>
+    <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+      <parameters>$(find rpd_robot_bringup)/config/rpd_robot_controllers.yaml</parameters>
+    </plugin>
+  </gazebo>
 
 </robot>
