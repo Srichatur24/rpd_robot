@@ -2,52 +2,41 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 
-  <!-- origin and geometry macro -->
-  <xacro:macro name="origin_geometry" params="link">
-    <origin rpy="0 0 0" xyz="${link['xyz']}" />
-    <geometry>
-      <mesh filename="file://${description_pkg}/meshes/${link['name']}.stl" /> <!-- package -->
-    </geometry>
-  </xacro:macro>
-
-
-  <!-- Inertial macro -->
-  <xacro:macro name="inertial" params="link">
-    <inertial>
+  <!-- link macro -->
+  <xacro:macro name="link" params="link color:=black">
+    <link name="${link['name']}">
+        <visual>
+          <origin rpy="0 0 0" xyz="${link['xyz']}" />
+          <geometry>
+            <mesh filename="file://${description_pkg}/meshes/${link['name']}.stl" />
+          </geometry>
+          <material name="${link['color']}" />
+        </visual>
+        <collision>
+          <origin rpy="0 0 0" xyz="${link['xyz']}" />
+          <geometry>
+            <mesh filename="file://${description_pkg}/meshes/${link['name']}.stl" />  <!-- box geo -->
+          </geometry>
+        </collision>
+        <inertial>
       <mass value="${link['mass']}" />
       <origin xyz="${link['com']}" rpy="0 0 0"/>
       <inertia ixx="${link['inertia']['ixx']}" ixy="0" ixz="0"
                iyy="${link['inertia']['iyy']}" iyz="0"
                izz="${link['inertia']['izz']}" />
     </inertial>
-  </xacro:macro>
-
-
-  <!-- link macro -->
-  <xacro:macro name="link" params="link color:=black">
-    <link name="${link['name']}">
-        <visual>
-          <xacro:origin_geometry link="${link}" />
-          <material name="${link['color']}" />
-        </visual>
-        <collision>
-          <xacro:origin_geometry link="${link}" /> <!-- box geo -->
-        </collision>
-        <xacro:inertial link="${link}" />
     </link>
   </xacro:macro>
 
 
  <!-- joint macro -->
-  <xacro:macro name="joint" params="joint is_fixed:=false">
+  <xacro:macro name="joint" params="joint">
     <joint name="${joint['name']}" type="${joint['type']}">
       <origin rpy="0 0 0" xyz="${joint['xyz']}" />
-      <xacro:if value="${not is_fixed}">
-        <limit effort="${joint['effort']}" lower="${joint['lower']}" upper="${joint['upper']}" velocity="${joint['velocity']}" />
-        <axis xyz="${joint['axis']}" />
-      </xacro:if>
-        <parent link="${joint['parent']}" />
-        <child link="${joint['child']}" />
+      <limit effort="${joint['effort']}" lower="${joint['lower']}" upper="${joint['upper']}" velocity="${joint['velocity']}" />
+      <axis xyz="${joint['axis']}" />
+      <parent link="${joint['parent']}" />
+      <child link="${joint['child']}" />
       <xacro:if value="${joint['mimic']['use']}">
         <mimic joint="${joint['mimic']['joint']}" multiplier="${joint['mimic']['multiplier']}" />
       </xacro:if>
@@ -82,8 +71,11 @@
 
 
   <!-- end effector link and joint -->
-  <xacro:joint joint="${joints[6]}" is_fixed="true" />
-
+  <joint name="${joints[6]['name']}" type="fixed">
+    <origin rpy="0 0 0" xyz="${joints[6]['xyz']}" />
+    <parent link="${joints[6]['parent']}" />
+    <child link="${joints[6]['child']}" />
+  </joint>
   <link name="${links[7]['name']}">
     <visual>
       <origin rpy="0 0 0" xyz="${links[7]['xyz']}" />

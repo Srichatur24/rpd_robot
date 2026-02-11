@@ -10,8 +10,8 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
 
-    rpd_robot_moveit_config_package = get_package_share_directory('rpd_robot_moveit_config')
-    config_folder = os.path.join(rpd_robot_moveit_config_package, 'config')
+    rpd_robot_moveit_config_pkg = get_package_share_directory('rpd_robot_moveit_config')
+    config_folder = os.path.join(rpd_robot_moveit_config_pkg, 'config')
     rviz_config_file = os.path.join(config_folder, 'moveit.rviz')
 
     declared_arguments = [
@@ -72,5 +72,6 @@ def generate_launch_description():
             },
         ],
     )
+
 
     return LaunchDescription([*declared_arguments, move_group_node, rviz_node])

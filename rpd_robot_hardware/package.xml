@@ -3,8 +3,8 @@
 <package format="3">
   <name>rpd_robot_hardware</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="cherry@todo.todo">cherry</maintainer>
+  <description>Hardware interface package for Roboparadigm Robot with Waveshare ST series servo motors</description>
+  <maintainer email="srichatur24@kmit.edu.in">Srichatur</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -13,6 +13,7 @@
   <depend>rclcpp_lifecycle</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
+  <depend>urdf</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

@@ -4,20 +4,21 @@
 
 namespace rpd_robot_hardware {
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    hardware_interface::CallbackReturn RpdRobotHardwareInterface::on_init(const hardware_interface::HardwareInfo &info) {
-        if(hardware_interface::SystemInterface::on_init(info) != hardware_interface::CallbackReturn::SUCCESS)
+    hardware_interface::CallbackReturn RpdRobotHardwareInterface::on_init(const hardware_interface::HardwareComponentInterfaceParams &params) {
+        if(hardware_interface::SystemInterface::on_init(params) != hardware_interface::CallbackReturn::SUCCESS)
             return hardware_interface::CallbackReturn::ERROR;
-        info_ = info;
+        info_ = params.hardware_info;
         num_of_joints_ = info_.joints.size();
         port_ = info_.hardware_parameters["port"];
         baudrate_ = std::stoi(info_.hardware_parameters["baudrate"]);
+        gripper_limit_ = 0.03;
 
         position_states_.resize(num_of_joints_, 0.0);
         velocity_states_.resize(num_of_joints_, 0.0);
-        acceleration_states_.resize(num_of_joints_, 0.0);
+        // acceleration_states_.resize(num_of_joints_, 0.0);
         position_commands_.resize(num_of_joints_, 0.0);
-        velocity_commands_.resize(num_of_joints_, 0.0);
-        acceleration_commands_.resize(num_of_joints_, 0.0);
+        // velocity_commands_.resize(num_of_joints_, 0.0);
+        // acceleration_commands_.resize(num_of_joints_, 0.0);
         motor_ids_.resize(num_of_joints_);
         motor_ids_uint8_.resize(num_of_joints_);
 
@@ -34,7 +35,7 @@ namespace rpd_robot_hardware {
             auto joint_name = info_.joints[i].name;
             state_interfaces.emplace_back(hardware_interface::StateInterface(joint_name, hardware_interface::HW_IF_POSITION, &position_states_[i]));
             state_interfaces.emplace_back(hardware_interface::StateInterface(joint_name, hardware_interface::HW_IF_VELOCITY, &velocity_states_[i]));
-            state_interfaces.emplace_back(hardware_interface::StateInterface(joint_name, hardware_interface::HW_IF_ACCELERATION, &acceleration_states_[i]));
+            // state_interfaces.emplace_back(hardware_interface::StateInterface(joint_name, hardware_interface::HW_IF_ACCELERATION, &acceleration_states_[i]));
         }
         return state_interfaces;
     }
@@ -44,8 +45,8 @@ namespace rpd_robot_hardware {
         for (size_t i = 0; i < num_of_joints_; i++) {
             auto joint_name = info_.joints[i].name;
             command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_POSITION, &position_commands_[i]));
-            command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_VELOCITY, &velocity_commands_[i]));
-            command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_ACCELERATION, &acceleration_commands_[i]));
+            // command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_VELOCITY, &velocity_commands_[i]));
+            // command_interfaces.emplace_back(hardware_interface::CommandInterface(joint_name, hardware_interface::HW_IF_ACCELERATION, &acceleration_commands_[i]));
         }
         return command_interfaces;
     }
@@ -79,7 +80,8 @@ namespace rpd_robot_hardware {
     hardware_interface::return_type RpdRobotHardwareInterface::read(const rclcpp::Time &, const rclcpp::Duration &) {
         driver_.syncReadPacketTx(motor_ids_uint8_.data(), num_of_joints_, SMS_STS_PRESENT_POSITION_L, sizeof(rx_packet_));
         // Receive and process response from each motor
-        for (size_t i = 0; i < num_of_joints_; i++) {
+        size_t i;
+        for (i = 0; i < num_of_joints_ - 1; i++) {
             if (!driver_.syncReadPacketRx(motor_ids_uint8_[i], rx_packet_)) continue;
             // Successfully received data
             int16_t raw_pos = driver_.syncReadRxPacketToWrod(15);
@@ -88,22 +90,23 @@ namespace rpd_robot_hardware {
             position_states_[i] = (raw_pos / 4095.0) * 2.0 * M_PI;
             velocity_states_[i] = raw_speed * 0.0146 * (2.0 * M_PI / 60.0);
         }
+        // 🌟 position_states_[i] = (raw_pos / 4095.0) * gripper_limit_;
         return hardware_interface::return_type::OK;
     }
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     hardware_interface::return_type RpdRobotHardwareInterface::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
-        // Prepare arrays for sync write
-        std::vector<s16> positions(num_of_joints_);
-        std::vector<u16> velocities(num_of_joints_);
-        std::vector<u8> accelerations(num_of_joints_);
+        std::vector<s16> positions(num_of_joints_, 0);
+        std::vector<u16> velocities(num_of_joints_, 2400);
+        std::vector<u8> accelerations(num_of_joints_, 50);
         // Convert commands from radians to motor units
-        for (size_t i = 0; i < num_of_joints_; i++) {
+        size_t i;
+        for (i = 0; i < num_of_joints_ - 1; i++) {
             int target_pos = static_cast<int>((position_commands_[i] / (2.0 * M_PI)) * 4095.0);
             positions[i] = static_cast<s16>(std::max(0, std::min(4095, target_pos)));
-            velocities[i] = static_cast<u16>(std::abs(velocity_commands_[i]) / (0.0146 * (2.0 * M_PI / 60.0)));
+            // velocities[i] = static_cast<u16>(std::abs(velocity_commands_[i]) / (0.0146 * (2.0 * M_PI / 60.0)));
             // accelerations[i] = static_cast<u8>(std::abs(acceleration_commands_[i]) / /*ACCEL_CONVERSION_FACTOR*/);
-            accelerations[i] = 50;
         }
+        // 🌟 positions[i] = static_cast<int>((position_commands_[i] / gripper_limit_) * 4095.0);
         driver_.SyncWritePosEx(motor_ids_uint8_.data(), num_of_joints_, positions.data(), velocities.data(), accelerations.data());
         return hardware_interface::return_type::OK;
     }

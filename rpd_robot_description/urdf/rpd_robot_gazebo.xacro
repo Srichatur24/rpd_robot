@@ -26,12 +26,12 @@
 <gazebo>
     <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
       <joint_name>world_to_${links[0]['name']}</joint_name>
-      <joint_name>joint_1</joint_name>
-      <joint_name>joint_2</joint_name>
-      <joint_name>joint_3</joint_name>
-      <joint_name>joint_4</joint_name>
-      <joint_name>gripper_left_joint</joint_name>
-      <joint_name>gripper_right_joint</joint_name>
+      <joint_name>${joints[0]['name']}</joint_name>
+      <joint_name>${joints[1]['name']}</joint_name>
+      <joint_name>${joints[2]['name']}</joint_name>
+      <joint_name>${joints[3]['name']}</joint_name>
+      <joint_name>${joints[4]['name']}</joint_name>
+      <joint_name>${joints[5]['name']}</joint_name>
     </plugin>
 </gazebo>
 

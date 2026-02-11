@@ -13,7 +13,7 @@ class RpdRobotHardwareInterface : public hardware_interface::SystemInterface
 {
 public:
     hardware_interface::CallbackReturn
-        on_init(const hardware_interface::HardwareInfo &info) override;
+        on_init(const hardware_interface::HardwareComponentInterfaceParams &params) override;
     hardware_interface::CallbackReturn
         on_configure(const rclcpp_lifecycle::State &previous_state) override;
     hardware_interface::CallbackReturn
@@ -38,13 +38,14 @@ private:
     std::string port_;
     int baudrate_;
     size_t num_of_joints_;
+    double gripper_limit_;
 
     std::vector<double> position_states_;
     std::vector<double> velocity_states_;
-    std::vector<double> acceleration_states_;
+    // std::vector<double> acceleration_states_;
     std::vector<double> position_commands_;
-    std::vector<double> velocity_commands_;
-    std::vector<double> acceleration_commands_;
+    // std::vector<double> velocity_commands_;
+    // std::vector<double> acceleration_commands_;
 
     std::vector<int> motor_ids_;
     std::vector<uint8_t> motor_ids_uint8_;

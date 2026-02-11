@@ -83,14 +83,12 @@ joints:
     effort: 500
     lower: -3.1415926535897932384626433832795
     upper: 3.1415926535897932384626433832795
-    velocity: 2.5
-    acceleration: 1.0
+    velocity: 5.0
     parent: base_link
     child: link_1
     motor_id: 1
     mimic:
       use: false
-    initial_position: 0.0
 
   - name: joint_2
     type: revolute
@@ -99,14 +97,12 @@ joints:
     effort: 500
     lower: -1.5707963267948966192313216916398
     upper: 1.5707963267948966192313216916398
-    velocity: 2.5
-    acceleration: 1.0
+    velocity: 5.0
     parent: link_1
     child: link_2
     motor_id: 2
     mimic:
       use: false
-    initial_position: 0.0
 
   - name: joint_3
     type: revolute
@@ -115,14 +111,12 @@ joints:
     effort: 500
     lower: -1.5707963267948966192313216916398
     upper: 1.5707963267948966192313216916398
-    velocity: 2.5
-    acceleration: 1.0
+    velocity: 5.0
     parent: link_2
     child: link_3
     motor_id: 3
     mimic:
       use: false
-    initial_position: 0.0
 
   - name: joint_4
     type: revolute
@@ -131,50 +125,43 @@ joints:
     effort: 500
     lower: -1.5707963267948966192313216916398
     upper: 1.5707963267948966192313216916398
-    velocity: 2.5
-    acceleration: 1.0
+    velocity: 5.0
     parent: link_3
     child: link_4
     motor_id: 4
     mimic:
       use: false
-    initial_position: 0.0
 
   - name: gripper_left_joint
     type: prismatic
     xyz: -0.000167 0.063237 -0.001105
-    axis: -1 0 0
+    axis: 1 0 0
     effort: 500
-    lower: -0.01
-    upper: 0.0
-    velocity: 0.01
+    lower: 0.0
+    upper: 0.03
+    velocity: 0.03
     parent: link_4
     child: gripper_left_link
     motor_id: 5
     mimic:
       use: false
-    initial_position: 0.0
 
   - name: gripper_right_joint
     type: prismatic
     xyz: -0.000167 0.063237 -0.001105
-    axis: 1 0 0
+    axis: -1 0 0
     effort: 500
-    lower: -0.01
-    upper: 0.0
-    velocity: 0.01
+    lower: 0.0
+    upper: 0.03
+    velocity: 0.03
     parent: link_4
     child: gripper_right_link
     mimic:
       use: true
       joint: gripper_left_joint
       multiplier: 1.0
-    initial_position: 0.0
 
   - name: ee_joint
-    type: fixed
     xyz: -0.000167 0.063237 -0.001105
     parent: link_4
     child: ee_link
-    mimic:
-      use: false

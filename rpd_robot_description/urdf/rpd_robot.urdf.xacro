@@ -2,10 +2,9 @@
 <robot name="rpd_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:arg name="port" default="/dev/ttyACM0" />
-  <xacro:arg name="baudrate" default="115200" />
+  <xacro:arg name="baudrate" default="1000000" />
   <xacro:arg name="use_sim" default="false" />
   <xacro:arg name="use_mock_hardware" default="false" />
-  <xacro:arg name="mock_sensor_commands" default="false" />
 
   <material name="black">
     <color rgba="0 0 0 1"/>

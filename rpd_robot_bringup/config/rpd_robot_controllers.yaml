@@ -23,12 +23,12 @@ arm_controller:
     interface_name: position
     command_interfaces:
       - position
-      - velocity
-      - acceleration
+      # - velocity
+      # - acceleration
     state_interfaces:
       - position
       - velocity
-      - acceleration
+      # - acceleration
     allow_partial_joints_goal: true
     allow_nonzero_velocity_at_trajectory_end: true
 
@@ -38,9 +38,9 @@ gripper_controller:
     joint: gripper_left_joint
     command_interfaces:
       - position
-      - velocity
-      - acceleration
+      # - velocity
+      # - acceleration
     state_interfaces:
       - position
       - velocity
-      - acceleration
+      # - acceleration
