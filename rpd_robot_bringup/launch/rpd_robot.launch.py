@@ -3,11 +3,11 @@ from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import LaunchConfiguration
-from launch.event_handlers import OnProcessExit, OnExecutionComplete
+from launch.substitutions import LaunchConfiguration, Command
+from launch_ros.parameter_descriptions import ParameterValue
+from launch.event_handlers import OnProcessExit, OnProcessStart
 import os
 from ament_index_python.packages import get_package_share_directory
-import xacro
 
 
 def generate_launch_description():
@@ -31,12 +31,13 @@ def generate_launch_description():
     robot_controllers = os.path.join(rpd_robot_bringup_pkg, 'config', 'rpd_robot_controllers.yaml')
     gazebo_bridge_config_file = os.path.join(rpd_robot_bringup_pkg, 'config', 'gazebo_bridge_config.yaml')
 
-    robot_description = xacro.process_file(xacro_file, mappings={
-        # 'port': port,
-        # 'baudrate': baudrate,
-        'use_sim': 'false',
-        'use_mock_hardware': 'false'
-    }).toprettyxml(indent='  ')
+    robot_description = ParameterValue(Command([
+        'xacro', ' ', xacro_file, ' ',
+        'port:=', port, ' ',
+        'baudrate:=', baudrate, ' ',
+        'use_sim:=', use_sim, ' ',
+        'use_mock_hardware:=', use_mock_hardware
+    ]), value_type=str)
 
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
@@ -102,20 +103,19 @@ def generate_launch_description():
             OnProcessExit(
                 target_action=gazebo_spawn_node,
                 on_exit=[joint_state_broadcaster_spawner],
-            ),
-            condition=IfCondition(use_sim)
+            )
         ),
         RegisterEventHandler(
-            OnExecutionComplete(
+            OnProcessStart(
                 target_action=control_node,
-                on_completion=[joint_state_broadcaster_spawner],
+                on_start=[joint_state_broadcaster_spawner]
             ),
             condition=UnlessCondition(use_sim)
         ),
         RegisterEventHandler(
-            OnExecutionComplete(
+            OnProcessExit(
                 target_action=joint_state_broadcaster_spawner,
-                on_completion=[arm_controller_spawner, gripper_controller_spawner],
+                on_exit=[arm_controller_spawner, gripper_controller_spawner],
             )
         ),
         *launch_arguments,

@@ -78,30 +78,30 @@ namespace rpd_robot_hardware {
     }
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     hardware_interface::return_type RpdRobotHardwareInterface::read(const rclcpp::Time &, const rclcpp::Duration &) {
-        driver_.syncReadPacketTx(motor_ids_uint8_.data(), num_of_joints_, SMS_STS_PRESENT_POSITION_L, sizeof(rx_packet_));
-        // Receive and process response from each motor
-        size_t i;
-        for (i = 0; i < num_of_joints_ - 1; i++) {
-            if (!driver_.syncReadPacketRx(motor_ids_uint8_[i], rx_packet_)) continue;
-            // Successfully received data
-            int16_t raw_pos = driver_.syncReadRxPacketToWrod(15);
-            int16_t raw_speed = driver_.syncReadRxPacketToWrod(15);
-            // Convert to radians and rad/s
-            position_states_[i] = (raw_pos / 4095.0) * 2.0 * M_PI;
-            velocity_states_[i] = raw_speed * 0.0146 * (2.0 * M_PI / 60.0);
-        }
-        // 🌟 position_states_[i] = (raw_pos / 4095.0) * gripper_limit_;
+        // driver_.syncReadPacketTx(motor_ids_uint8_.data(), num_of_joints_, SMS_STS_PRESENT_POSITION_L, sizeof(rx_packet_));
+        // // Receive and process response from each motor
+        // size_t i;
+        // for (i = 0; i < num_of_joints_ - 1; i++) {
+        //     if (!driver_.syncReadPacketRx(motor_ids_uint8_[i], rx_packet_)) continue;
+        //     // Successfully received data
+        //     int16_t raw_pos = driver_.syncReadRxPacketToWrod(15);
+        //     int16_t raw_speed = driver_.syncReadRxPacketToWrod(15);
+        //     // Convert to radians and rad/s
+        //     position_states_[i] = (raw_pos / 4095.0) * 2.0 * M_PI;
+        //     velocity_states_[i] = raw_speed * 0.0146 * (2.0 * M_PI / 60.0);
+        // }
+        // // 🌟 position_states_[i] = (raw_pos / 4095.0) * gripper_limit_;
         return hardware_interface::return_type::OK;
     }
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     hardware_interface::return_type RpdRobotHardwareInterface::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/) {
         std::vector<s16> positions(num_of_joints_, 0);
-        std::vector<u16> velocities(num_of_joints_, 2400);
-        std::vector<u8> accelerations(num_of_joints_, 50);
+        std::vector<u16> velocities(num_of_joints_, 2047);
+        std::vector<u8> accelerations(num_of_joints_, 20);
         // Convert commands from radians to motor units
         size_t i;
         for (i = 0; i < num_of_joints_ - 1; i++) {
-            int target_pos = static_cast<int>((position_commands_[i] / (2.0 * M_PI)) * 4095.0);
+            int target_pos = static_cast<int>(((position_commands_[i] / M_PI / 2.0) + 0.5) * 4095.0);
             positions[i] = static_cast<s16>(std::max(0, std::min(4095, target_pos)));
             // velocities[i] = static_cast<u16>(std::abs(velocity_commands_[i]) / (0.0146 * (2.0 * M_PI / 60.0)));
             // accelerations[i] = static_cast<u8>(std::abs(acceleration_commands_[i]) / /*ACCEL_CONVERSION_FACTOR*/);

@@ -142,7 +142,7 @@ joints:
     velocity: 0.03
     parent: link_4
     child: gripper_left_link
-    motor_id: 5
+    motor_id: 6
     mimic:
       use: false
 
